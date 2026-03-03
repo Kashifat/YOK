@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentification - YOK</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+        }
+        
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .token-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Auth YOK</h1>
+        <p class="subtitle">Marketplace E-commerce</p>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('inscription')">Inscription</button>
+            <button class="tab" onclick="switchTab('connexion')">Connexion</button>
+        </div>
+        
+        <!-- Formulaire Inscription -->
+        <div id="inscription" class="form-section active">
+            <form onsubmit="inscrire(event)">
+                <div class="form-group">
+                    <label>Nom complet</label>
+                    <input type="text" id="nom_complet" required placeholder="Jean Dupont">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="courriel" required placeholder="jean@exemple.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" id="telephone" placeholder="0612345678">
+                </div>
+                <div class="form-group">
+                    <label>Rôle</label>
+                    <select id="role">
+                        <option value="CLIENT">Client</option>
+                        <option value="VENDEUR">Vendeur</option>
+                        <option value="ADMINISTRATEUR">Administrateur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe (min 8 caractères)</label>
+                    <input type="password" id="mot_de_passe" required minlength="8" placeholder="••••••••">
+                </div>
+                <button type="submit">S'inscrire</button>
+            </form>
+            <div class="loader" id="loader-inscription"></div>
+            <div class="result" id="result-inscription"></div>
+        </div>
+        
+        <!-- Formulaire Connexion -->
+        <div id="connexion" class="form-section">
+            <form onsubmit="connecter(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login_courriel" required placeholder="jean@exemple.com">
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="login_mot_de_passe" required placeholder="••••••••">
+                </div>
+                <button type="submit">Se connecter</button>
+            </form>
+            <div class="loader" id="loader-connexion"></div>
+            <div class="result" id="result-connexion"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/auth';
+        
+        function switchTab(tab) {
+            // Changer les onglets actifs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Changer les sections
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+        }
+        
+        async function inscrire(event) {
+            event.preventDefault();
+            
+            const loader = document.getElementById('loader-inscription');
+            const result = document.getElementById('result-inscription');
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            const data = {
+                nom_complet: document.getElementById('nom_complet').value,
+                courriel: document.getElementById('courriel').value,
+                telephone: document.getElementById('telephone').value || null,
+                role: document.getElementById('role').value,
+                mot_de_passe: document.getElementById('mot_de_passe').value
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/inscription`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Inscription réussie !</strong><br>
+                        Utilisateur: ${responseData.nom_complet}<br>
+                        Email: ${responseData.courriel}<br>
+                        Rôle: ${responseData.role}<br>
+                        ID: ${responseData.identifiant}
+                    `;
+                    event.target.reset();
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `<strong>❌ Erreur</strong><br>${responseData.detail || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `<strong>❌ Erreur de connexion</strong><br>${error.message}`;
+            }
+        }
+        
+        async function connecter(event) {
+            event.preventDefault();
+            
+            const loader = document.getElementById('loader-connexion');
+            const result = document.getElementById('result-connexion');
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            const data = {
+                courriel: document.getElementById('login_courriel').value,
+                mot_de_passe: document.getElementById('login_mot_de_passe').value
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/connexion`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Connexion réussie !</strong><br>
+                        <div class="token-display">
+                            <strong>Access Token:</strong><br>${responseData.access_token}<br><br>
+                            <strong>Refresh Token:</strong><br>${responseData.refresh_token}
+                        </div>
+                    `;
+                    
+                    // Sauvegarder les tokens
+                    localStorage.setItem('access_token', responseData.access_token);
+                    localStorage.setItem('refresh_token', responseData.refresh_token);
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `<strong>❌ Erreur</strong><br>${responseData.detail || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `<strong>❌ Erreur de connexion</strong><br>${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
