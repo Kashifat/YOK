@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentification - YOK Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            grid-column: 1 / -1;
+            font-size: 2.5em;
+            color: white;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f093fb;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #e080eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-google {
+            background: #DB4437;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .btn-google:hover {
+            background: #c23b30;
+        }
+
+        .btn-facebook {
+            background: #1877F2;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .btn-facebook:hover {
+            background: #165ec4;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            margin-top: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .token-display {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .token-label {
+            color: #d9534f;
+            font-weight: bold;
+            word-break: break-all;
+            font-size: 0.85em;
+        }
+
+        .user-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .user-info h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-client {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-vendeur {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-admin {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                grid-column: 1;
+            }
+        }
+
+        .oauth-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .oauth-info p {
+            color: #1976d2;
+            margin: 5px 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Authentification YOK</h1>
+
+        <!-- ====== INSCRIPTION ====== -->
+        <div class="card">
+            <div class="section">
+                <h2>📝 Inscription Classique</h2>
+                <form id="inscriptionForm">
+                    <div class="form-group">
+                        <label for="inscEmail">Email:</label>
+                        <input type="email" id="inscEmail" name="courriel" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inscNom">Nom Complet:</label>
+                        <input type="text" id="inscNom" name="nom_complet" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inscTel">Téléphone:</label>
+                        <input type="tel" id="inscTel" name="telephone">
+                    </div>
+                    <div class="form-group">
+                        <label for="inscMdp">Mot de passe (min 8 caractères):</label>
+                        <input type="password" id="inscMdp" name="mot_de_passe" minlength="8" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inscRole">Rôle:</label>
+                        <select id="inscRole" name="role" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="CLIENT">CLIENT</option>
+                            <option value="VENDEUR">VENDEUR</option>
+                            <option value="ADMINISTRATEUR">ADMINISTRATEUR</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Créer un compte</button>
+                </form>
+                <div id="inscriptionResponse"></div>
+            </div>
+        </div>
+
+        <!-- ====== CONNEXION ====== -->
+        <div class="card">
+            <div class="section">
+                <h2>🔑 Connexion Classique</h2>
+                <form id="connexionForm">
+                    <div class="form-group">
+                        <label for="connEmail">Email:</label>
+                        <input type="email" id="connEmail" name="courriel" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="connMdp">Mot de passe:</label>
+                        <input type="password" id="connMdp" name="mot_de_passe" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Se connecter</button>
+                </form>
+                <div id="connexionResponse"></div>
+            </div>
+        </div>
+
+        <!-- ====== OAUTH ====== -->
+        <div class="card">
+            <div class="section">
+                <h2>🌐 Authentification OAuth</h2>
+                <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;">
+                    Crée automatiquement un compte CLIENT si c'est votre première connexion
+                </p>
+                <div class="button-group">
+                    <button id="googleBtn" class="btn-google">🔴 Google Login</button>
+                    <button id="facebookBtn" class="btn-facebook">🔵 Facebook Login</button>
+                </div>
+                <div id="oauthResponse"></div>
+            </div>
+        </div>
+
+        <!-- ====== UTILISATEUR CONNECTÉ ====== -->
+        <div class="card">
+            <div class="section">
+                <h2>👤 Utilisateur Connecté</h2>
+                <div id="userConnectedDiv" style="display: none;">
+                    <div class="user-info" id="userInfo"></div>
+                    <div class="token-display">
+                        <p><strong>Access Token:</strong></p>
+                        <p class="token-label" id="accessTokenDisplay"></p>
+                    </div>
+                    <button id="deconnexionBtn" class="btn-secondary" style="width: 100%; margin-top: 15px;">Se déconnecter</button>
+                </div>
+                <div id="notConnectedDiv" style="text-align: center; color: #999; padding: 20px;">
+                    <p>❌ Non connecté</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== INFOS API ====== -->
+        <div class="card">
+            <div class="section">
+                <h2>ℹ️ Configuration</h2>
+                <div class="oauth-info">
+                    <p><strong>API URL:</strong> http://localhost:8001</p>
+                    <p><strong>Routes disponibles:</strong></p>
+                    <ul style="margin-left: 20px; color: #1976d2;">
+                        <li>POST /auth/inscription</li>
+                        <li>POST /auth/connexion</li>
+                        <li>GET /auth/oauth/google</li>
+                        <li>GET /auth/oauth/google/callback</li>
+                        <li>GET /auth/oauth/facebook</li>
+                        <li>GET /auth/oauth/facebook/callback</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+
+        // ========== UTILITAIRES ==========
+        function showAlert(message, type, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function showResponse(data, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="response-box">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        function saveTokens(tokens) {
+            localStorage.setItem('access_token', tokens.access_token);
+            localStorage.setItem('refresh_token', tokens.refresh_token);
+            displayConnectedUser(tokens);
+        }
+
+        function getStoredTokens() {
+            return {
+                access_token: localStorage.getItem('access_token'),
+                refresh_token: localStorage.getItem('refresh_token')
+            };
+        }
+
+        function decodeJWT(token) {
+            const parts = token.split('.');
+            if (parts.length !== 3) return null;
+            try {
+                return JSON.parse(atob(parts[1]));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function displayConnectedUser(tokens) {
+            const payload = decodeJWT(tokens.access_token);
+            if (!payload) return;
+
+            const userDiv = document.getElementById('userConnectedDiv');
+            const notConnectedDiv = document.getElementById('notConnectedDiv');
+            const userInfo = document.getElementById('userInfo');
+
+            // Afficher le rôle seulement pour VENDEUR et ADMINISTRATEUR
+            let roleHTML = '';
+            if (payload.role === 'VENDEUR' || payload.role === 'ADMINISTRATEUR') {
+                const roleClass = `badge-${payload.role.toLowerCase()}`;
+                const roleText = payload.role === 'VENDEUR' ? '🏪 VENDEUR' : '👨‍💼 ADMINISTRATEUR';
+                roleHTML = `<p><strong>Rôle:</strong> <span class="badge ${roleClass}">${roleText}</span></p>`;
+            }
+
+            userInfo.innerHTML = `
+                <h3>Connecté avec succès!</h3>
+                <p><strong>ID:</strong> ${payload.sub}</p>
+                ${roleHTML}
+                <p><strong>Type de token:</strong> ${payload.type}</p>
+                <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                    <em>Token expire dans 15 minutes</em>
+                </p>
+            `;
+
+            document.getElementById('accessTokenDisplay').textContent = tokens.access_token.substring(0, 50) + '...';
+
+            userDiv.style.display = 'block';
+            notConnectedDiv.style.display = 'none';
+        }
+
+        function clearConnectedUser() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            document.getElementById('userConnectedDiv').style.display = 'none';
+            document.getElementById('notConnectedDiv').style.display = 'block';
+        }
+
+        // ========== INSCRIPTION ==========
+        document.getElementById('inscriptionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`${API_URL}/auth/inscription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert(`✅ Inscription réussie! Bienvenue ${data.nom_complet}`, 'success', 'inscriptionResponse');
+                    saveTokens(result);
+                    e.target.reset();
+                } else {
+                    showAlert(`❌ Erreur: ${result.detail}`, 'error', 'inscriptionResponse');
+                }
+            } catch (error) {
+                showAlert(`❌ Erreur réseau: ${error.message}`, 'error', 'inscriptionResponse');
+            }
+        });
+
+        // ========== CONNEXION ==========
+        document.getElementById('connexionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`${API_URL}/auth/connexion`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert(`✅ Connexion réussie!`, 'success', 'connexionResponse');
+                    saveTokens(result);
+                } else {
+                    showAlert(`❌ Erreur: ${result.detail}`, 'error', 'connexionResponse');
+                }
+            } catch (error) {
+                showAlert(`❌ Erreur réseau: ${error.message}`, 'error', 'connexionResponse');
+            }
+        });
+
+        // ========== OAUTH ==========
+        document.getElementById('googleBtn').addEventListener('click', () => {
+            // Redirection vers le backend qui redirigera vers Google
+            window.location.href = `${API_URL}/auth/oauth/google`;
+        });
+
+        document.getElementById('facebookBtn').addEventListener('click', () => {
+            // Redirection vers le backend qui redirigera vers Facebook
+            window.location.href = `${API_URL}/auth/oauth/facebook`;
+        });
+
+        // ========== DÉCONNEXION ==========
+        document.getElementById('deconnexionBtn').addEventListener('click', () => {
+            clearConnectedUser();
+            showAlert('✅ Vous avez été déconnecté', 'success', 'connexionResponse');
+        });
+
+        // ========== INIT ==========
+        window.addEventListener('load', () => {
+            const tokens = getStoredTokens();
+            if (tokens.access_token) {
+                displayConnectedUser(tokens);
+            }
+
+            // Vérifier les paramètres URL (callback OAuth)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('access_token')) {
+                const newTokens = {
+                    access_token: urlParams.get('access_token'),
+                    refresh_token: urlParams.get('refresh_token') || ''
+                };
+                saveTokens(newTokens);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>

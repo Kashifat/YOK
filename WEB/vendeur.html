@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOK Marketplace - Espace Vendeur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .header h1 {
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #f5576c;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f5576c;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f5576c;
+            color: white;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #e5466a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .user-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .user-info h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .not-connected {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏪 YOK Marketplace - Espace Vendeur</h1>
+        <p>Gérez votre boutique et vendez vos produits</p>
+    </div>
+
+    <div class="container">
+        <!-- INSCRIPTION -->
+        <div class="card">
+            <h2>📝 Créer une Boutique</h2>
+            <form id="inscriptionForm">
+                <div class="form-group">
+                    <label for="inscEmail">Email:</label>
+                    <input type="email" id="inscEmail" name="courriel" required>
+                </div>
+                <div class="form-group">
+                    <label for="inscNom">Nom Boutique:</label>
+                    <input type="text" id="inscNom" name="nom_complet" required>
+                </div>
+                <div class="form-group">
+                    <label for="inscTel">Téléphone:</label>
+                    <input type="tel" id="inscTel" name="telephone">
+                </div>
+                <div class="form-group">
+                    <label for="inscMdp">Mot de passe (min 8 caractères):</label>
+                    <input type="password" id="inscMdp" name="mot_de_passe" minlength="8" required>
+                </div>
+                <button type="submit">Créer une Boutique</button>
+            </form>
+            <div id="inscriptionResponse"></div>
+        </div>
+
+        <!-- CONNEXION -->
+        <div class="card">
+            <h2>🔑 Accès Vendeur</h2>
+            <form id="connexionForm">
+                <div class="form-group">
+                    <label for="connEmail">Email:</label>
+                    <input type="email" id="connEmail" name="courriel" required>
+                </div>
+                <div class="form-group">
+                    <label for="connMdp">Mot de passe:</label>
+                    <input type="password" id="connMdp" name="mot_de_passe" required>
+                </div>
+                <button type="submit">Se Connecter</button>
+            </form>
+            <div id="connexionResponse"></div>
+        </div>
+
+        <!-- UTILISATEUR CONNECTÉ -->
+        <div class="card">
+            <h2>🏪 Ma Boutique</h2>
+            <div id="userConnectedDiv" style="display: none;">
+                <div class="user-info" id="userInfo"></div>
+                <button id="deconnexionBtn" style="background: #6c757d; margin-top: 20px;">Se Déconnecter</button>
+            </div>
+            <div id="notConnectedDiv" class="not-connected">
+                ❌ Non connecté
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="card" id="dashboardDiv" style="display: none; grid-column: 1 / -1;">
+            <h2>📊 Dashboard</h2>
+            <div id="dashboardContent" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;"></div>
+        </div>
+
+        <!-- AJOUTER PRODUIT -->
+        <div class="card" id="addProduitDiv" style="display: none;">
+            <h2>➕ Ajouter un Produit</h2>
+            <form id="ajouterProduitForm">
+                <div class="form-group">
+                    <label>Nom:</label>
+                    <input type="text" name="nom" required>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <input type="text" name="description">
+                </div>
+                <div class="form-group">
+                    <label>Prix (FCFA):</label>
+                    <input type="number" name="prix_cfa" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>Stock:</label>
+                    <input type="number" name="stock" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Catégorie ID:</label>
+                    <select id="categorieSelect" name="categorie_identifiant" required></select>
+                </div>
+                <button type="submit">Créer Produit</button>
+            </form>
+            <div id="ajouterProduitResponse"></div>
+        </div>
+
+        <!-- MES PRODUITS -->
+        <div class="card" id="mesProduits" style="display: none; grid-column: 1 / -1;">
+            <h2>📦 Mes Produits</h2>
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="searchProduitInput" placeholder="🔍 Rechercher..." style="width: 300px;">
+                <button onclick="rechercherMesProduits()" style="width: auto; padding: 10px 20px; margin-left: 10px;">Rechercher</button>
+            </div>
+            <div id="produitsListe"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+        const API_CATALOGUE = 'http://localhost:8002';
+
+        function showAlert(message, type, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function decodeJWT(token) {
+            const parts = token.split('.');
+            if (parts.length !== 3) return null;
+            try {
+                return JSON.parse(atob(parts[1]));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveTokens(tokens) {
+            localStorage.setItem('access_token', tokens.access_token);
+            localStorage.setItem('refresh_token', tokens.refresh_token);
+            displayConnectedUser(tokens);
+        }
+
+        function displayConnectedUser(tokens) {
+            const payload = decodeJWT(tokens.access_token);
+            if (!payload) return;
+
+            // Vérifier que c'est un VENDEUR
+            if (payload.role !== 'VENDEUR') {
+                alert('❌ Vous n\'avez pas accès à cet espace');
+                clearConnectedUser();
+                return;
+            }
+
+            const userDiv = document.getElementById('userConnectedDiv');
+            const notConnectedDiv = document.getElementById('notConnectedDiv');
+            const userInfo = document.getElementById('userInfo');
+            const dashboardDiv = document.getElementById('dashboardDiv');
+            const addProduitDiv = document.getElementById('addProduitDiv');
+            const mesProduits = document.getElementById('mesProduits');
+
+            userInfo.innerHTML = `
+                <h3>Boutique Active</h3>
+                <p><strong>ID Boutique:</strong> ${payload.sub}</p>
+                <p><strong>Statut:</strong> <span class="badge">🏪 VENDEUR</span></p>
+                <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                    <em>Vous pouvez gérer vos produits et commandes</em>
+                </p>
+            `;
+
+            userDiv.style.display = 'block';
+            notConnectedDiv.style.display = 'none';
+            dashboardDiv.style.display = 'block';
+            addProduitDiv.style.display = 'block';
+            mesProduits.style.display = 'block';
+
+            // Charger les données
+            chargerDashboard();
+            chargerCategories();
+            chargerMesProduits();
+        }
+
+        function clearConnectedUser() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            document.getElementById('userConnectedDiv').style.display = 'none';
+            document.getElementById('notConnectedDiv').style.display = 'block';
+            document.getElementById('dashboardDiv').style.display = 'none';
+            document.getElementById('addProduitDiv').style.display = 'none';
+            document.getElementById('mesProduits').style.display = 'none';
+        }
+
+        // DASHBOARD
+        async function chargerDashboard() {
+            const token = localStorage.getItem('access_token');
+            try {
+                const response = await fetch(`${API_CATALOGUE}/catalogue/vendeur/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('dashboardContent').innerHTML = `
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                            <h3 style="color: #1976d2; margin-bottom: 5px;">${data.total_produits}</h3>
+                            <p style="color: #666; font-size: 0.9em;">Total Produits</p>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                            <h3 style="color: #388e3c; margin-bottom: 5px;">${data.produits_actifs}</h3>
+                            <p style="color: #666; font-size: 0.9em;">Actifs</p>
+                        </div>
+                        <div style="background: #ffebee; padding: 15px; border-radius: 8px; text-align: center;">
+                            <h3 style="color: #d32f2f; margin-bottom: 5px;">${data.produits_rupture_stock}</h3>
+                            <p style="color: #666; font-size: 0.9em;">Rupture Stock</p>
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                            <h3 style="color: #f57c00; margin-bottom: 5px;">${data.chiffre_affaires_total_cfa}</h3>
+                            <p style="color: #666; font-size: 0.9em;">CA Total (FCFA)</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // CATEGORIES
+        async function chargerCategories() {
+            try {
+                const response = await fetch(`${API_CATALOGUE}/catalogue/public/categories`);
+                if (response.ok) {
+                    const categories = await response.json();
+                    const select = document.getElementById('categorieSelect');
+                    select.innerHTML = categories.map(c => 
+                        `<option value="${c.identifiant}">${c.nom}</option>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // AJOUTER PRODUIT
+        document.getElementById('ajouterProduitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('access_token');
+            const formData = new FormData(e.target);
+            const data = {
+                nom: formData.get('nom'),
+                description: formData.get('description'),
+                prix_cfa: parseInt(formData.get('prix_cfa')),
+                stock: parseInt(formData.get('stock')),
+                categorie_identifiant: formData.get('categorie_identifiant'),
+                tailles: [],
+                couleurs: []
+            };
+
+            try {
+                const response = await fetch(`${API_CATALOGUE}/catalogue/vendeur/produits`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showAlert('✅ Produit créé avec succès!', 'success', 'ajouterProduitResponse');
+                    e.target.reset();
+                    chargerDashboard();
+                    chargerMesProduits();
+                } else {
+                    const error = await response.json();
+                    showAlert(`❌ Erreur: ${error.detail}`, 'error', 'ajouterProduitResponse');
+                }
+            } catch (error) {
+                showAlert(`❌ Erreur: ${error.message}`, 'error', 'ajouterProduitResponse');
+            }
+        });
+
+        // MES PRODUITS
+        async function chargerMesProduits() {
+            const token = localStorage.getItem('access_token');
+            try {
+                const response = await fetch(`${API_CATALOGUE}/catalogue/vendeur/produits`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const produits = await response.json();
+                    afficherProduits(produits);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function rechercherMesProduits() {
+            const terme = document.getElementById('searchProduitInput').value.trim();
+            if (!terme) {
+                chargerMesProduits();
+                return;
+            }
+
+            const token = localStorage.getItem('access_token');
+            try {
+                const response = await fetch(`${API_CATALOGUE}/catalogue/vendeur/produits/recherche/${encodeURIComponent(terme)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const produits = await response.json();
+                    afficherProduits(produits);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function afficherProduits(produits) {
+            const liste = document.getElementById('produitsListe');
+            if (!produits || produits.length === 0) {
+                liste.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit</p>';
+                return;
+            }
+
+            liste.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Nom</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Prix (FCFA)</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Stock</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${produits.map(p => `
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">${p.nom}</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">${p.prix_cfa}</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd; color: ${p.stock === 0 ? '#d32f2f' : '#388e3c'};">
+                                    ${p.stock} ${p.stock === 0 ? '⚠️' : '✅'}
+                                </td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                    ${p.est_actif ? '✅ Actif' : '❌ Inactif'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // INSCRIPTION
+        document.getElementById('inscriptionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.role = 'VENDEUR'; // VENDEUR par défaut
+
+            try {
+                const response = await fetch(`${API_URL}/auth/inscription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert(`✅ Boutique créée avec succès!`, 'success', 'inscriptionResponse');
+                    saveTokens(result);
+                    e.target.reset();
+                } else {
+                    showAlert(`❌ Erreur: ${result.detail}`, 'error', 'inscriptionResponse');
+                }
+            } catch (error) {
+                showAlert(`❌ Erreur: ${error.message}`, 'error', 'inscriptionResponse');
+            }
+        });
+
+        // CONNEXION
+        document.getElementById('connexionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`${API_URL}/auth/connexion`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const payload = decodeJWT(result.access_token);
+                    if (payload.role !== 'VENDEUR') {
+                        showAlert(`❌ Vous n'avez pas accès à cet espace`, 'error', 'connexionResponse');
+                        return;
+                    }
+                    showAlert(`✅ Connexion réussie!`, 'success', 'connexionResponse');
+                    saveTokens(result);
+                } else {
+                    showAlert(`❌ Erreur: ${result.detail}`, 'error', 'connexionResponse');
+                }
+            } catch (error) {
+                showAlert(`❌ Erreur: ${error.message}`, 'error', 'connexionResponse');
+            }
+        });
+
+        // DÉCONNEXION
+        document.getElementById('deconnexionBtn').addEventListener('click', () => {
+            clearConnectedUser();
+            showAlert('✅ Vous avez été déconnecté', 'success', 'connexionResponse');
+        });
+
+        // INIT
+        window.addEventListener('load', () => {
+            const accessToken = localStorage.getItem('access_token');
+            if (accessToken) {
+                const tokens = {
+                    access_token: accessToken,
+                    refresh_token: localStorage.getItem('refresh_token')
+                };
+                displayConnectedUser(tokens);
+            }
+
+            // Callback OAuth
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('access_token')) {
+                alert('❌ Les vendeurs doivent créer un compte avec email/mot de passe');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
