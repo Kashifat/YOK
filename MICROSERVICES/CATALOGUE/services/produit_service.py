@@ -1,5 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+import re
+import unicodedata
 
 from ..models.produit import Produit
 from ..models.media import ImageProduit, VideoProduit
@@ -16,6 +18,12 @@ class ProduitService:
 		self.repo = ProduitRepository(db)
 		self.media_repo = MediaRepository(db)
 		self.cat_repo = CategorieRepository(db)
+
+	@staticmethod
+	def _slugifier(valeur: str) -> str:
+		valeur_ascii = unicodedata.normalize("NFKD", valeur).encode("ascii", "ignore").decode("ascii")
+		slug = re.sub(r"[^a-zA-Z0-9]+", "-", valeur_ascii.lower()).strip("-")
+		return slug or "produit"
 
 	def lister_public(self, categorie_id=None):
 		return self.repo.lister_public(categorie_id=categorie_id)
@@ -41,6 +49,12 @@ class ProduitService:
 			description=payload.description,
 			prix_cfa=payload.prix_cfa,
 			stock=payload.stock,
+			tailles=payload.tailles,
+			couleurs=payload.couleurs,
+			slug=payload.slug or self._slugifier(payload.nom),
+			mots_cles=payload.mots_cles,
+			marque=payload.marque,
+			origine_pays=payload.origine_pays,
 		)
 		return self.repo.creer(produit)
 
@@ -56,6 +70,10 @@ class ProduitService:
 			categorie = self.cat_repo.get_by_id(donnees["categorie_identifiant"])
 			if not categorie or not categorie.est_actif:
 				raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Catégorie invalide")
+		if "nom" in donnees and "slug" not in donnees and not produit.slug:
+			donnees["slug"] = self._slugifier(donnees["nom"])
+		if "slug" in donnees and donnees["slug"]:
+			donnees["slug"] = self._slugifier(donnees["slug"])
 
 		return self.repo.maj(produit, donnees)
 
@@ -102,6 +120,7 @@ class ProduitService:
 			Produit.est_actif == True,
 			or_(
 				Produit.nom.ilike(f"%{terme}%"),
-				Produit.description.ilike(f"%{terme}%")
+				Produit.description.ilike(f"%{terme}%"),
+				Produit.slug.ilike(f"%{terme}%")
 			)
 		).all()

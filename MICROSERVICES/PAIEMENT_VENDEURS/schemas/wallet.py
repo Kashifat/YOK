@@ -59,3 +59,50 @@ class WalletDetailsRead(BaseModel):
 	wallet: WalletRead
 	reservations: list[WalletReservationRead]
 	transactions: list[TransactionWalletRead]
+
+
+class VendeurCompteFinancierRead(BaseModel):
+	mes_revenus_cfa: int
+	montant_en_attente_cfa: int
+	montant_confirme_cfa: int
+	montant_verse_cfa: int
+	historique_transactions: list["VendeurFinanceTransactionRead"]
+
+
+class VendeurFinanceDashboardRead(BaseModel):
+	total_ventes_cfa: int
+	montant_en_attente_cfa: int
+	montant_confirme_cfa: int
+	montant_verse_cfa: int
+
+
+class VendeurFinanceTransactionRead(BaseModel):
+	commande_identifiant: UUID
+	article_identifiant: UUID
+	produit_identifiant: UUID
+	produit_nom: str
+	quantite: int
+	montant_vendeur_cfa: int
+	statut_financier: str
+	date_commande: datetime
+	date_confirmation: datetime | None = None
+	date_versement: datetime | None = None
+
+
+class VendeurFinanceTransactionsRead(BaseModel):
+	transactions: list[VendeurFinanceTransactionRead]
+	total: int
+
+
+class VersementVendeurCreate(BaseModel):
+	commande_identifiant: UUID
+	vendeur_identifiant: UUID | None = None
+	montant_cfa: int
+	reference_versement: str | None = None
+
+
+class VersementVendeurRead(BaseModel):
+	message: str
+	vendeur_identifiant: UUID
+	commande_identifiant: UUID
+	montant_cfa: int

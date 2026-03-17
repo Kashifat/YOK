@@ -12,6 +12,10 @@ class ProduitBase(BaseModel):
 	stock: int = Field(default=0, ge=0)
 	tailles: list[str] = Field(default_factory=list)
 	couleurs: list[str] = Field(default_factory=list)
+	slug: str | None = Field(default=None, max_length=200)
+	mots_cles: list[str] = Field(default_factory=list)
+	marque: str | None = Field(default=None, max_length=120)
+	origine_pays: str = Field(default="CN", max_length=10)
 
 
 class ProduitCreate(ProduitBase):
@@ -26,6 +30,10 @@ class ProduitUpdate(BaseModel):
 	stock: int | None = Field(default=None, ge=0)
 	tailles: list[str] | None = None
 	couleurs: list[str] | None = None
+	slug: str | None = Field(default=None, max_length=200)
+	mots_cles: list[str] | None = None
+	marque: str | None = Field(default=None, max_length=120)
+	origine_pays: str | None = Field(default=None, max_length=10)
 	est_actif: bool | None = None
 
 

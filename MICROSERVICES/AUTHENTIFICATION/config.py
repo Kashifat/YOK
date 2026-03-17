@@ -1,14 +1,22 @@
 import os
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 class Settings:
 	"""Configuration du microservice d'authentification."""
 
 	app_name: str = "Service Authentification"
-	jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "change_me_in_env")
-	jwt_algorithm: str = "HS256"
-	access_token_expire_minutes: int = 15
-	refresh_token_expire_days: int = 7
+	jwt_secret_key: str = os.getenv(
+		"AUTH_JWT_SECRET_KEY",
+		os.getenv("JWT_SECRET_KEY", "9f3d7c8a2e1b4f6d9c5e3a1b7f4d8c2e9a5b3f6e1d4c8a2f7b5e9c3a1d6f4"),
+	)
+	jwt_algorithm: str = os.getenv("AUTH_JWT_ALGORITHM", os.getenv("JWT_ALGORITHM", "HS256"))
+	access_token_expire_minutes: int = int(os.getenv("AUTH_ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+	refresh_token_expire_days: int = int(os.getenv("AUTH_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 	rate_limit_login: int = 5
 	
 	# OAuth Google

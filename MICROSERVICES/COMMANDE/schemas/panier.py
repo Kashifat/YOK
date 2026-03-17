@@ -10,6 +10,7 @@ from ..models.commande import StatutCommande
 
 class PanierArticleBase(BaseModel):
 	produit_identifiant: UUID
+	variante_identifiant: UUID | None = None
 	quantite: int = Field(gt=0)
 
 

@@ -1,13 +1,18 @@
 """
-Pydantic schemas pour les notifications
+Pydantic schemas pour les notifications.
 """
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from uuid import UUID
 from enum import Enum
+from uuid import UUID
 
-class TypeNotificationEnum(str, Enum):
-    """Types de notifications"""
+from pydantic import BaseModel, EmailStr
+
+from ..models.notification import TypeNotification
+
+
+class TypeNotificationEvenement(str, Enum):
+    """Types d'événements acceptés par les endpoints legacy du microservice."""
+
     COMMANDE_CONFIRMEE = "commande_confirmee"
     PREPARATION_COMMENCEE = "preparation_commencee"
     EN_LIVRAISON = "en_livraison"
@@ -16,41 +21,47 @@ class TypeNotificationEnum(str, Enum):
     PROBLEME = "probleme"
     REMBOURSEMENT = "remboursement"
 
+
+TypeNotificationEnum = TypeNotificationEvenement
+
+
 class NotificationCreate(BaseModel):
-    """Schema pour créer une notification"""
+    """Schema interne aligné sur la table notifications."""
+
     utilisateur_identifiant: UUID
-    email_destinataire: EmailStr
-    type_notification: TypeNotificationEnum
-    commande_identifiant: UUID | None = None
-    sujet: str
-    contenu_html: str
+    type: TypeNotification
+    titre: str
+    message: str | None = None
+    lien: str | None = None
+
 
 class NotificationRead(BaseModel):
-    """Schema pour lire une notification"""
+    """Schema de lecture aligné sur yok_db.sql."""
+
     identifiant: UUID
     utilisateur_identifiant: UUID
-    email_destinataire: str
-    type_notification: TypeNotificationEnum
-    commande_identifiant: UUID | None
-    sujet: str
-    email_envoye: bool
-    date_envoi: datetime | None
-    erreur_message: str | None
+    type: TypeNotification
+    titre: str
+    message: str | None = None
+    lien: str | None = None
+    est_lue: bool
+    date_lecture: datetime | None = None
     date_creation: datetime
-    
-    class Config:
-        from_attributes = True
+
+    model_config = {"from_attributes": True}
+
 
 class NotificationRequest(BaseModel):
-    """Request pour trigger une notification depuis COMMANDE"""
+    """Request pour déclencher une notification et éventuellement un email."""
+
     utilisateur_identifiant: UUID
     email_destinataire: EmailStr
     commande_identifiant: UUID
-    type_event: TypeNotificationEnum
-    # Données optionnelles pour template
+    type_event: TypeNotificationEvenement
     numero_commande: str | None = None
     montant_total: float | None = None
     date_livraison_estimee: str | None = None
     adresse_livraison: str | None = None
     raison_annulation: str | None = None
     message_probleme: str | None = None
+    lien: str | None = None

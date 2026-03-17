@@ -7,7 +7,7 @@ from shared.db.conn import obtenir_session
 
 from MICROSERVICES.AUTHENTIFICATION.models.user import RoleUtilisateur
 
-from ..schemas.commande import CommandeCreate, CommandeCreationRead, CommandeRead
+from ..schemas.commande import CommandeCreate, CommandeCreationRead, CommandeRead, CommandeStatutUXRead
 from ..services.autorisation_service import AutorisationService
 from ..services.commande_service import CommandeService
 
@@ -35,6 +35,13 @@ def obtenir_commande(commande_id: UUID, utilisateur=Depends(auth_client), db: Se
 	"""Récupère le détail d'une commande."""
 	service = CommandeService(db)
 	return service.obtenir_commande_client(commande_id, utilisateur.get("sub"))
+
+
+@router.get("/{commande_id}/statut-ux", response_model=CommandeStatutUXRead)
+def obtenir_statut_ux_commande(commande_id: UUID, utilisateur=Depends(auth_client), db: Session = Depends(obtenir_session)):
+	"""Expose un statut simplifié pour l'affichage côté client."""
+	service = CommandeService(db)
+	return service.statut_ux_client(commande_id, utilisateur.get("sub"))
 
 
 @router.delete("/{commande_id}")

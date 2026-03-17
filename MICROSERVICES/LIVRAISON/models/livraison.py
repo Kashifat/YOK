@@ -21,6 +21,7 @@ class Livraison(Base):
 
 	identifiant = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
 	commande_identifiant = Column(UUID(as_uuid=True), ForeignKey("commandes.identifiant", ondelete="CASCADE"), nullable=False, unique=True)
+	dossier_consolidation_identifiant = Column(UUID(as_uuid=True), ForeignKey("dossiers_consolidation.identifiant", ondelete="SET NULL"), nullable=True)
 	statut = Column(Enum(StatutLivraison, name="statut_livraison", create_type=False), nullable=False, server_default=text("'CREEE'"))
 	livreur_nom = Column(Text)
 	livreur_telephone = Column(Text)

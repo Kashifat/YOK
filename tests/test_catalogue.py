@@ -39,6 +39,19 @@ def db():
 	session.close()
 
 
+@pytest.fixture(autouse=True)
+def nettoyer_donnees_catalogue():
+	"""Réinitialise les données catalogue pour éviter les fuites entre tests."""
+	session = SessionLocale()
+	try:
+		session.execute(text("TRUNCATE TABLE categories, produits, variantes_produits, images_produits, videos_produits RESTART IDENTITY CASCADE"))
+		session.commit()
+		yield
+	finally:
+		session.rollback()
+		session.close()
+
+
 @pytest.fixture
 def app_catalogue():
 	"""App catalogue de test."""

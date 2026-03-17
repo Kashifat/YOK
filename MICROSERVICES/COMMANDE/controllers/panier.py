@@ -31,17 +31,17 @@ def ajouter_article(payload: PanierArticleCreate, utilisateur=Depends(auth_clien
 
 
 @router.patch("/articles/{produit_id}")
-def maj_quantite_article(produit_id: UUID, payload: PanierArticleUpdate, utilisateur=Depends(auth_client), db: Session = Depends(obtenir_session)):
+def maj_quantite_article(produit_id: UUID, payload: PanierArticleUpdate, variante_identifiant: UUID | None = None, utilisateur=Depends(auth_client), db: Session = Depends(obtenir_session)):
 	"""Met à jour la quantité d'un article dans le panier."""
 	service = PanierService(db)
-	return service.maj_quantite(utilisateur.get("sub"), produit_id, payload)
+	return service.maj_quantite(utilisateur.get("sub"), produit_id, payload, variante_identifiant)
 
 
 @router.delete("/articles/{produit_id}")
-def supprimer_article(produit_id: UUID, utilisateur=Depends(auth_client), db: Session = Depends(obtenir_session)):
+def supprimer_article(produit_id: UUID, variante_identifiant: UUID | None = None, utilisateur=Depends(auth_client), db: Session = Depends(obtenir_session)):
 	"""Supprime un article du panier."""
 	service = PanierService(db)
-	return service.supprimer_article(utilisateur.get("sub"), produit_id)
+	return service.supprimer_article(utilisateur.get("sub"), produit_id, variante_identifiant)
 
 
 @router.delete("")

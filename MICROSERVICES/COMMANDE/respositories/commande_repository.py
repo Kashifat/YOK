@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, func
+from datetime import datetime, timedelta, timezone
 
 from ..models.commande import Commande, CommandeArticle
 
@@ -20,6 +22,37 @@ class CommandeRepository:
 		return self.db.query(Commande).join(CommandeArticle).filter(
 			CommandeArticle.vendeur_identifiant == vendeur_id
 		).order_by(Commande.date_creation.desc()).all()
+
+	def lister_expeditions_a_faire_vendeur(self, vendeur_id, limite: int = 50):
+		"""Liste les articles prêts à être expédiés par ce vendeur, avec deadline."""
+		from MICROSERVICES.LOGISTIQUE.models.logistique import DossierConsolidation, ReceptionFournisseur, StatutReceptionFournisseur
+		
+		# Récupère les articles payés du vendeur dont l'expédition n'est pas encore confirmée
+		query = (
+			self.db.query(CommandeArticle, Commande, DossierConsolidation, ReceptionFournisseur)
+			.join(Commande, CommandeArticle.commande_identifiant == Commande.identifiant)
+			.join(DossierConsolidation, DossierConsolidation.commande_identifiant == Commande.identifiant)
+			.outerjoin(
+				ReceptionFournisseur,
+				and_(
+					ReceptionFournisseur.dossier_consolidation_identifiant == DossierConsolidation.identifiant,
+					ReceptionFournisseur.vendeur_identifiant == vendeur_id,
+					ReceptionFournisseur.commande_article_identifiant == CommandeArticle.identifiant,
+				),
+			)
+			.filter(
+				CommandeArticle.vendeur_identifiant == vendeur_id,
+				Commande.statut == "PAYEE",
+				# Récréception non confirmée ou récemment confirmée (< 24h)
+				(ReceptionFournisseur.statut.in_([
+					StatutReceptionFournisseur.EN_ATTENTE_EXPEDITION_VENDEUR,
+					StatutReceptionFournisseur.EXPEDIE_PAR_VENDEUR,
+				]) | ReceptionFournisseur.statut.is_(None)),
+			)
+			.order_by(CommandeArticle.date_creation.asc())
+			.limit(limite)
+		)
+		return query.all()
 
 	def lister_toutes(self, limite: int = 100, offset: int = 0):
 		"""Liste toutes les commandes (admin)."""

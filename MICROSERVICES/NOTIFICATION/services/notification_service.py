@@ -1,14 +1,15 @@
 """
-Service métier pour les notifications
+Service métier pour les notifications.
 """
-from uuid import UUID
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
 import logging
-from datetime import datetime
+from uuid import UUID
+
+from fastapi import HTTPException, status
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 from ..models.notification import Notification, TypeNotification
-from ..schemas.notification import NotificationRequest, TypeNotificationEnum
+from ..schemas.notification import NotificationRequest, TypeNotificationEvenement
 from .email_service import EmailService, TemplateEmail
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,25 @@ class NotificationService:
         self.db = db
         self.email_service = email_service
         self.template = TemplateEmail()
+
+    @staticmethod
+    def _mapper_type_notification(type_event: TypeNotificationEvenement) -> TypeNotification:
+        correspondances = {
+            TypeNotificationEvenement.COMMANDE_CONFIRMEE: TypeNotification.COMMANDE_PAYEE,
+            TypeNotificationEvenement.PREPARATION_COMMENCEE: TypeNotification.COMMANDE_PAYEE,
+            TypeNotificationEvenement.EN_LIVRAISON: TypeNotification.COMMANDE_EXPEDIEE,
+            TypeNotificationEvenement.LIVREE: TypeNotification.COMMANDE_LIVREE,
+        }
+        notification_type = correspondances.get(type_event)
+        if not notification_type:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "type_event non supporté par la table notifications de yok_db: "
+                    f"{type_event.value}"
+                ),
+            )
+        return notification_type
     
     async def creer_et_envoyer_notification(
         self,
@@ -56,14 +76,10 @@ class NotificationService:
             # Créer l'enregistrement en base
             notification = Notification(
                 utilisateur_identifiant=request.utilisateur_identifiant,
-                email_destinataire=request.email_destinataire,
-                type_notification=TypeNotification[request.type_event.value.upper()],
-                commande_identifiant=request.commande_identifiant,
-                sujet=sujet,
-                contenu_html=contenu_html,
-                email_envoye=succes,
-                date_envoi=datetime.utcnow() if succes else None,
-                erreur_message=erreur
+                type=self._mapper_type_notification(request.type_event),
+                titre=sujet,
+                message=self._generer_message_plaintext(request),
+                lien=request.lien or self._construire_lien_commande(request.commande_identifiant),
             )
             
             self.db.add(notification)
@@ -86,7 +102,7 @@ class NotificationService:
     
     def _generer_template(
         self,
-        type_event: TypeNotificationEnum,
+        type_event: TypeNotificationEvenement,
         numero_commande: str,
         montant_total: float,
         date_livraison: str,
@@ -99,32 +115,32 @@ class NotificationService:
         # Nom client temporaire (à récupérer depuis la BD si nécessaire)
         nom_client = "Client YOK"
         
-        if type_event == TypeNotificationEnum.COMMANDE_CONFIRMEE:
+        if type_event == TypeNotificationEvenement.COMMANDE_CONFIRMEE:
             sujet = f"Commande confirmée - #{numero_commande}"
             contenu = self.template.template_commande_confirmee(
                 nom_client, numero_commande, montant_total, adresse_livraison
             )
-        elif type_event == TypeNotificationEnum.PREPARATION_COMMENCEE:
+        elif type_event == TypeNotificationEvenement.PREPARATION_COMMENCEE:
             sujet = f"Votre commande #{numero_commande} est en cours de préparation"
             contenu = self.template.template_preparation_commencee(
                 nom_client, numero_commande
             )
-        elif type_event == TypeNotificationEnum.EN_LIVRAISON:
+        elif type_event == TypeNotificationEvenement.EN_LIVRAISON:
             sujet = f"Votre commande #{numero_commande} est en route!"
             contenu = self.template.template_en_livraison(
                 nom_client, numero_commande, date_livraison
             )
-        elif type_event == TypeNotificationEnum.LIVREE:
+        elif type_event == TypeNotificationEvenement.LIVREE:
             sujet = f"Commande livrée - #{numero_commande}"
             contenu = self.template.template_livree(
                 nom_client, numero_commande
             )
-        elif type_event == TypeNotificationEnum.ANNULEE:
+        elif type_event == TypeNotificationEvenement.ANNULEE:
             sujet = f"Commande annulée - #{numero_commande}"
             contenu = self.template.template_annulee(
                 nom_client, numero_commande, raison
             )
-        elif type_event == TypeNotificationEnum.PROBLEME:
+        elif type_event == TypeNotificationEvenement.PROBLEME:
             sujet = f"Alerte sur votre commande - #{numero_commande}"
             contenu = self.template.template_probleme(
                 nom_client, numero_commande, message
@@ -134,6 +150,27 @@ class NotificationService:
             contenu = "<p>Merci de votre confiance!</p>"
         
         return sujet, contenu
+
+    def _generer_message_plaintext(self, request: NotificationRequest) -> str:
+        numero_commande = request.numero_commande or str(request.commande_identifiant)
+
+        if request.type_event == TypeNotificationEvenement.COMMANDE_CONFIRMEE:
+            return f"Votre commande {numero_commande} est confirmée."
+        if request.type_event == TypeNotificationEvenement.PREPARATION_COMMENCEE:
+            return f"Votre commande {numero_commande} est en préparation."
+        if request.type_event == TypeNotificationEvenement.EN_LIVRAISON:
+            return f"Votre commande {numero_commande} est en livraison."
+        if request.type_event == TypeNotificationEvenement.LIVREE:
+            return f"Votre commande {numero_commande} a été livrée."
+        if request.type_event == TypeNotificationEvenement.ANNULEE:
+            return f"Votre commande {numero_commande} a été annulée."
+        if request.type_event == TypeNotificationEvenement.REMBOURSEMENT:
+            return f"Un remboursement est en cours pour la commande {numero_commande}."
+        return request.message_probleme or f"Une mise à jour est disponible pour la commande {numero_commande}."
+
+    @staticmethod
+    def _construire_lien_commande(commande_id: UUID) -> str:
+        return f"/commandes/{commande_id}"
     
     def lister_notifications(
         self,

@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from MICROSERVICES.COMMANDE.models.commande import Commande, StatutCommande
+from MICROSERVICES.LOGISTIQUE.models.logistique import DossierConsolidation, StatutConsolidation
 from MICROSERVICES.COMMANDE.schemas.commande import CommandeUpdate
 from MICROSERVICES.COMMANDE.services.commande_service import CommandeService
 
@@ -33,12 +34,29 @@ class LivraisonService:
 		if not commande:
 			raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Commande introuvable")
 
+		dossier_id = payload.dossier_consolidation_identifiant
+		if dossier_id:
+			dossier = self.db.query(DossierConsolidation).filter(DossierConsolidation.identifiant == dossier_id).first()
+			if not dossier:
+				raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dossier de consolidation introuvable")
+			if str(dossier.commande_identifiant) != str(payload.commande_identifiant):
+				raise HTTPException(
+					status_code=status.HTTP_400_BAD_REQUEST,
+					detail="Le dossier de consolidation ne correspond pas à la commande",
+				)
+			if dossier.statut not in {StatutConsolidation.ARRIVE_ABIDJAN, StatutConsolidation.REMIS_LIVRAISON_LOCALE}:
+				raise HTTPException(
+					status_code=status.HTTP_400_BAD_REQUEST,
+					detail="La livraison locale ne peut commencer qu'après ARRIVE_ABIDJAN",
+				)
+
 		existante = self.repo.get_by_commande(payload.commande_identifiant)
 		if existante:
 			return existante
 
 		livraison = Livraison(
 			commande_identifiant=payload.commande_identifiant,
+			dossier_consolidation_identifiant=payload.dossier_consolidation_identifiant,
 			statut=StatutLivraison.ASSIGNEE if payload.livreur_nom else StatutLivraison.CREEE,
 			livreur_nom=payload.livreur_nom,
 			livreur_telephone=payload.livreur_telephone,

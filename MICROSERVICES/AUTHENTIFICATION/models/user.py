@@ -10,6 +10,7 @@ class RoleUtilisateur(str, enum.Enum):
     CLIENT = "CLIENT"
     VENDEUR = "VENDEUR"
     ADMINISTRATEUR = "ADMINISTRATEUR"
+    AGENT_LOGISTIQUE = "AGENT_LOGISTIQUE"
 
 
 class StatutKYC(str, enum.Enum):

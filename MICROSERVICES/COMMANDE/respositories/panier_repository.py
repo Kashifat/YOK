@@ -25,22 +25,28 @@ class PanierRepository:
 			panier = self.creer_panier(utilisateur_id)
 		return panier
 
-	def get_article(self, panier_id, produit_id):
+	def get_article(self, panier_id, produit_id, variante_id=None):
 		"""Récupère un article du panier."""
-		return self.db.query(PanierArticle).filter(
+		requete = self.db.query(PanierArticle).filter(
 			PanierArticle.panier_identifiant == panier_id,
 			PanierArticle.produit_identifiant == produit_id
-		).first()
+		)
+		if variante_id is None:
+			requete = requete.filter(PanierArticle.variante_identifiant.is_(None))
+		else:
+			requete = requete.filter(PanierArticle.variante_identifiant == variante_id)
+		return requete.first()
 
-	def ajouter_article(self, panier_id, produit_id, quantite):
+	def ajouter_article(self, panier_id, produit_id, quantite, variante_id=None):
 		"""Ajoute un article au panier (ou met à jour la quantité)."""
-		article = self.get_article(panier_id, produit_id)
+		article = self.get_article(panier_id, produit_id, variante_id)
 		if article:
 			article.quantite += quantite
 		else:
 			article = PanierArticle(
 				panier_identifiant=panier_id,
 				produit_identifiant=produit_id,
+				variante_identifiant=variante_id,
 				quantite=quantite
 			)
 			self.db.add(article)

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -119,7 +119,7 @@ class AuthService:
 
     def _creer_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         a_encoder = data.copy()
-        expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+        expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
         a_encoder.update({"exp": expire})
 
         return jwt.encode(

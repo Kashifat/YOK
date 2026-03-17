@@ -8,6 +8,7 @@ from ..models.livraison import StatutLivraison
 
 class LivraisonCreate(BaseModel):
 	commande_identifiant: UUID
+	dossier_consolidation_identifiant: UUID | None = None
 	livreur_nom: str | None = Field(default=None, max_length=120)
 	livreur_telephone: str | None = Field(default=None, max_length=40)
 	commentaire: str | None = None
@@ -45,6 +46,7 @@ class LivraisonEvenementRead(BaseModel):
 class LivraisonRead(BaseModel):
 	identifiant: UUID
 	commande_identifiant: UUID
+	dossier_consolidation_identifiant: UUID | None = None
 	statut: StatutLivraison
 	livreur_nom: str | None
 	livreur_telephone: str | None
